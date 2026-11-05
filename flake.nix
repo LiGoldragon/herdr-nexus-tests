@@ -9,7 +9,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     herdr-nexus = {
-      url = "github:LiGoldragon/herdr-nexus/4860b80";
+      url = "github:LiGoldragon/herdr-nexus/82c2cab";
       flake = false;
     };
   };

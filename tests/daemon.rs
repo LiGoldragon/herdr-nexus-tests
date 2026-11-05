@@ -245,3 +245,18 @@ fn concurrent_configure_responses_do_not_lose_an_applied_setting() {
         Some(Duration::from_secs(2))
     );
 }
+
+#[test]
+fn sockets_are_named_after_the_herdr_nexus() {
+    let names = herdr_nexus_wire::socket_names();
+    assert_eq!(names.public_nexus_socket.0, "herdr-nexus.sock");
+    assert_eq!(names.meta_nexus_socket.0, "herdr-nexus-meta.sock");
+    assert_eq!(
+        names.public_translator_socket.0,
+        "herdr-nexus-translator.sock"
+    );
+    assert_eq!(
+        names.meta_translator_socket.0,
+        "herdr-nexus-meta-translator.sock"
+    );
+}
