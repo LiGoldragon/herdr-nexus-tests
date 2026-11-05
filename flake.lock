@@ -76,16 +76,16 @@
     "herdr-nexus": {
       "flake": false,
       "locked": {
-        "lastModified": 1793843147,
-        "narHash": "sha256-Inqsll8LNu5w1B50LXp4wCAFqs1vMezmAOAaPW9mIVY=",
+        "lastModified": 1793843641,
+        "narHash": "sha256-oN3slgDM7Lj3RZxQhZnNYoJd604Prb7nR8TiMzYxh70=",
         "owner": "LiGoldragon",
         "repo": "herdr-nexus",
-        "rev": "82ec081602878ef7af77e82ab1c077e47af07987",
+        "rev": "4860b805980c8d27238956f6b88fa0e17062237e",
         "type": "github"
       },
       "original": {
         "owner": "LiGoldragon",
-        "ref": "82ec081",
+        "ref": "4860b80",
         "repo": "herdr-nexus",
         "type": "github"
       }

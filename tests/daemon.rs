@@ -192,3 +192,56 @@ fn stale_list_cannot_overwrite_uncertain_prompt_state() {
     drop(dispatcher);
     std::fs::remove_dir(directory).unwrap();
 }
+
+#[test]
+fn concurrent_configure_responses_do_not_lose_an_applied_setting() {
+    let store = Arc::new(ConfigurationStore::default());
+    for setting in [
+        CoreSet::StartTimeout(Timeout(1_000)),
+        CoreSet::Polling(Timeout(1_000)),
+        CoreSet::FrameCapacity(ByteLimit(65_536)),
+        CoreSet::TransportTimeout(Timeout(1_000)),
+    ] {
+        assert!(matches!(
+            store.configure(setting, || Ok(())),
+            core_meta_herdr_nexus::Response::Configured(_)
+        ));
+    }
+
+    let (binding_tx, binding_rx) = std::sync::mpsc::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel();
+    let final_setting = {
+        let store = Arc::clone(&store);
+        std::thread::spawn(move || {
+            store.configure(CoreSet::SubscriberCapacity(8), || {
+                binding_tx.send(()).expect("binding entered");
+                release_rx.recv().expect("release binding");
+                Ok(())
+            })
+        })
+    };
+    binding_rx.recv().expect("final setting reached binding");
+    let (second_started_tx, second_started_rx) = std::sync::mpsc::channel();
+    let second_setting = {
+        let store = Arc::clone(&store);
+        std::thread::spawn(move || {
+            second_started_tx.send(()).expect("second setting started");
+            store.configure(CoreSet::Polling(Timeout(2_000)), || Ok(()))
+        })
+    };
+    second_started_rx.recv().expect("second setting attempted");
+    std::thread::sleep(Duration::from_millis(50));
+    release_tx.send(()).expect("release final setting");
+    assert!(matches!(
+        final_setting.join().expect("final setting thread"),
+        core_meta_herdr_nexus::Response::Configured(_)
+    ));
+    assert!(matches!(
+        second_setting.join().expect("second setting thread"),
+        core_meta_herdr_nexus::Response::Configured(_)
+    ));
+    assert_eq!(
+        store.partial.read().expect("partial configuration").polling,
+        Some(Duration::from_secs(2))
+    );
+}
